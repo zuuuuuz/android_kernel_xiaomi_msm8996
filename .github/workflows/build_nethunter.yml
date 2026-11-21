@@ -43,7 +43,7 @@ jobs:
       - name: Patch mac80211 for Packet Injection
         run: |
           if [ -f net/mac80211/tx.c ]; then
-            sed -i 's/if (unlikely(info->flags & IEEE80211_TX_CTL_INJECTED))/if (false)/g' net/mac80211/tx.c || true
+            sed -i 's/if (unlikely(info->flags & IEEE80211_TX_CTL_INJECTED))/if (false \&\& (info->flags \& IEEE80211_TX_CTL_INJECTED))/g' net/mac80211/tx.c
           fi
 
       - name: Configure & Compile Kernel with GCC 4.9
@@ -71,7 +71,7 @@ jobs:
             -e USB_CONFIGFS_F_HID
 
           make O=out HOSTCFLAGS="-fcommon" olddefconfig
-          make -j2 O=out HOSTCFLAGS="-fcommon"
+          make -j$(nproc) O=out HOSTCFLAGS="-fcommon"
 
       - name: Pack Flashable Zip
         run: |
