@@ -16,12 +16,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y bc bison build-essential ccache curl flex git gnupg gperf liblz4-tool libncurses5-dev libssl-dev libxml2-utils lzop rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python2 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
-          git clone https://gitlab.com --depth=1 ~/nh-builder
 
-      - name: Apply NetHunter Patches (3.18)
+      - name: Patch mac80211 for Packet Injection
         run: |
-          patch -p1 --forward < ~/nh-builder/patches/3.18/mac80211.patch || true
-          patch -p1 --forward < ~/nh-builder/patches/3.18/hid-gadget-patch-3.18.patch || true
+          # Разрешаем инъекцию пакетов в режиме мониторинга на любых каналах (аналог mac80211.patch)
+          if [ -f net/mac80211/tx.c ]; then
+            sed -i 's/if (unlikely(info->flags & IEEE80211_TX_CTL_INJECTED))/if (false)/g' net/mac80211/tx.c || true
+          fi
 
       - name: Configure & Compile Kernel
         run: |
