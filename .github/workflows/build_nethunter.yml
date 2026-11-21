@@ -71,7 +71,7 @@ jobs:
             -e USB_CONFIGFS_F_HID
 
           make O=out HOSTCFLAGS="-fcommon" olddefconfig
-          make -j$(nproc) O=out HOSTCFLAGS="-fcommon"
+          make -j2 O=out HOSTCFLAGS="-fcommon"
 
       - name: Pack Flashable Zip
         run: |
