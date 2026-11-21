@@ -22,14 +22,16 @@ jobs:
       - name: Checkout GCC 4.9 Toolchains
         uses: actions/checkout@v4
         with:
-          repository: KudProject/arm64-gcc
+          repository: LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9
+          ref: lineage-19.1
           path: gcc64
           fetch-depth: 1
 
       - name: Checkout GCC 4.9 ARM32
         uses: actions/checkout@v4
         with:
-          repository: KudProject/arm-gcc
+          repository: LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9
+          ref: lineage-19.1
           path: gcc32
           fetch-depth: 1
 
