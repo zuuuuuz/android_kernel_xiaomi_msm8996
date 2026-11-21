@@ -55,7 +55,7 @@ jobs:
 
           mkdir -p out
           DEFCONFIG=$(ls arch/arm64/configs/*lithium* | head -n 1 | xargs basename)
-          make O=out "$DEFCONFIG"
+          make O=out HOSTCFLAGS="-fcommon" "$DEFCONFIG"
 
           ./scripts/config --file out/.config \
             -e MAC80211 \
@@ -70,8 +70,8 @@ jobs:
             -e HID_GENERIC \
             -e USB_CONFIGFS_F_HID
 
-          make O=out olddefconfig
-          make -j$(nproc) O=out
+          make O=out HOSTCFLAGS="-fcommon" olddefconfig
+          make -j$(nproc) O=out HOSTCFLAGS="-fcommon"
 
       - name: Pack Flashable Zip
         run: |
