@@ -19,11 +19,8 @@ jobs:
 
       - name: Fix GCC 11 Compatibility & Patch mac80211
         run: |
-          # Фикс ошибки multiple definition of yylloc в GCC 10/11
           sed -i 's/^YYLTYPE yylloc;/extern YYLTYPE yylloc;/g' scripts/dtc/dtc-lexer.lex.c_shipped || true
           sed -i 's/^YYLTYPE yylloc;/extern YYLTYPE yylloc;/g' scripts/dtc/dtc-lexer.l || true
-          
-          # Разрешаем инъекцию пакетов в режиме мониторинга
           if [ -f net/mac80211/tx.c ]; then
             sed -i 's/if (unlikely(info->flags & IEEE80211_TX_CTL_INJECTED))/if (false)/g' net/mac80211/tx.c || true
           fi
@@ -54,16 +51,8 @@ jobs:
           make O=out olddefconfig
           make -j$(nproc) O=out KCFLAGS="-Wno-error -fcommon" HOSTCFLAGS="-fcommon"
 
-      - name: Package AnyKernel3 Zip
-        run: |
-          git clone https://github.com --depth=1 ~/AnyKernel3
-          cp out/arch/arm64/boot/Image.gz-dtb ~/AnyKernel3/
-          sed -i 's/device.name1=.*/device.name1=lithium/' ~/AnyKernel3/anykernel.sh
-          sed -i 's/block=.*/block=\/dev\/block\/bootdevice\/by-name\/boot;/' ~/AnyKernel3/anykernel.sh
-          cd ~/AnyKernel3 && zip -r9 ~/NetHunter-Kernel-lithium-AR9271.zip * -x .git README.md *placeholder
-
       - name: Upload Ready Kernel
         uses: actions/upload-artifact@v4
         with:
-          name: NetHunter-Kernel-lithium-AR9271
-          path: ~/NetHunter-Kernel-lithium-AR9271.zip
+          name: Image-gz-dtb-lithium
+          path: out/arch/arm64/boot/Image.gz-dtb
