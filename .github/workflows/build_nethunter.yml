@@ -12,6 +12,13 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Checkout AnyKernel3
+        uses: actions/checkout@v4
+        with:
+          repository: osm0sis/AnyKernel3
+          path: AnyKernel3
+          fetch-depth: 1
+
       - name: Install Build Dependencies & Toolchains
         run: |
           sudo apt-get update
@@ -25,7 +32,7 @@ jobs:
             sed -i 's/if (unlikely(info->flags & IEEE80211_TX_CTL_INJECTED))/if (false)/g' net/mac80211/tx.c || true
           fi
 
-      - name: Configure & Compile Kernel
+      - name: Configure & Compile Kernel (Strictly lithium)
         run: |
           export ARCH=arm64
           export SUBARCH=arm64
@@ -33,7 +40,10 @@ jobs:
           export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 
           mkdir -p out
-          make O=out lineageos_lithium_defconfig || make O=out gemini_defconfig
+          # Находим точный конфиг именно для lithium
+          DEFCONFIG=$(ls arch/arm64/configs/*lithium* | head -n 1 | xargs basename)
+          echo "Using defconfig: $DEFCONFIG"
+          make O=out "$DEFCONFIG"
 
           ./scripts/config --file out/.config \
             -e MAC80211 \
@@ -51,8 +61,16 @@ jobs:
           make O=out olddefconfig
           make -j$(nproc) O=out KCFLAGS="-Wno-error -fcommon" HOSTCFLAGS="-fcommon"
 
-      - name: Upload Ready Kernel
+      - name: Pack Flashable Zip
+        run: |
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/
+          rm -rf AnyKernel3/ramdisk AnyKernel3/patch AnyKernel3/modules
+          sed -i 's/device.name1=.*/device.name1=lithium/' AnyKernel3/anykernel.sh
+          sed -i 's/block=.*/block=\/dev\/block\/bootdevice\/by-name\/boot;/' AnyKernel3/anykernel.sh
+          cd AnyKernel3 && zip -r9 ../NetHunter-Kernel-lithium.zip * -x .git README.md *placeholder
+
+      - name: Upload Flashable Zip
         uses: actions/upload-artifact@v4
         with:
-          name: Image-gz-dtb-lithium
-          path: out/arch/arm64/boot/Image.gz-dtb
+          name: NetHunter-Kernel-lithium
+          path: NetHunter-Kernel-lithium.zip
