@@ -17,9 +17,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y bc bison build-essential ccache curl flex git gnupg gperf liblz4-tool libncurses5-dev libssl-dev libxml2-utils lzop rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python2 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
-      - name: Patch mac80211 for Packet Injection
+      - name: Fix GCC 11 Compatibility & Patch mac80211
         run: |
-          # Разрешаем инъекцию пакетов в режиме мониторинга на любых каналах (аналог mac80211.patch)
+          # Фикс ошибки multiple definition of yylloc в GCC 10/11
+          sed -i 's/^YYLTYPE yylloc;/extern YYLTYPE yylloc;/g' scripts/dtc/dtc-lexer.lex.c_shipped || true
+          sed -i 's/^YYLTYPE yylloc;/extern YYLTYPE yylloc;/g' scripts/dtc/dtc-lexer.l || true
+          
+          # Разрешаем инъекцию пакетов в режиме мониторинга
           if [ -f net/mac80211/tx.c ]; then
             sed -i 's/if (unlikely(info->flags & IEEE80211_TX_CTL_INJECTED))/if (false)/g' net/mac80211/tx.c || true
           fi
@@ -48,7 +52,7 @@ jobs:
             -e USB_CONFIGFS_F_HID
 
           make O=out olddefconfig
-          make -j$(nproc) O=out
+          make -j$(nproc) O=out KCFLAGS="-Wno-error -fcommon" HOSTCFLAGS="-fcommon"
 
       - name: Package AnyKernel3 Zip
         run: |
