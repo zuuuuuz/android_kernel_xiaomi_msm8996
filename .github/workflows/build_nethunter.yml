@@ -15,9 +15,7 @@ jobs:
       - name: Install Build Dependencies & Toolchains
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf lib32ncurses5-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python2
-          git clone https://googlesource.com -b android-10.0.0_r47 --depth=1 ~/gcc64
-          git clone https://googlesource.com -b android-10.0.0_r47 --depth=1 ~/gcc32
+          sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf lib32ncurses5-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python2 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
           git clone https://gitlab.com --depth=1 ~/nh-builder
 
       - name: Apply NetHunter Patches (3.18)
@@ -29,8 +27,8 @@ jobs:
         run: |
           export ARCH=arm64
           export SUBARCH=arm64
-          export CROSS_COMPILE=~/gcc64/bin/aarch64-linux-android-
-          export CROSS_COMPILE_ARM32=~/gcc32/bin/arm-linux-androideabi-
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 
           mkdir -p out
           make O=out lineageos_lithium_defconfig || make O=out gemini_defconfig
